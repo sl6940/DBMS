@@ -1,0 +1,111 @@
+exp-6
+
+CREATE TABLE EMP(
+    empno number,
+    ename varchar(50),
+    job varchar(50),
+    mgr number,
+    hiredate date,
+    sal number,
+    comm number,
+    dept number
+);
+
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7369,'SMITH','CLERK',7902,'17-DEC-80',800,'',20);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7499,'ALLEN','SALESMAN',7698,'20-FEB-81',1600,300,30);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7521,'WARD','SALESMAN',7698,'22-FEB-81',1250,500,30);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7566,'JONES','MANAGER',7839,'02-APR-81',2975,'',20);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7654,'MARTIN','SALESMAN',7698,'28-SEP-81',1250,1400,30);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7698,'BLAKE','MANAGER',7839,'01-MAY-81',2850,'',30);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7782,'CLARK','MANAGER',7839,'09-JUN-81',2450,'',10);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7788,'SCOTT','ANALYST',7566,'19-APR-87',3000,'',20);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7839,'KING','PRESIDENT','','17-NOV-81',5000,'',10);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7844,'TURNER','SALESMAN',7698,'08-SEP-81',1500,0,30);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7876,'ADAMS','CLERK',7788,'23-MAY-87',1100,'',20);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7900,'JAMES','CLERK',7698,'03-DEC-81',95,0,30);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7902,'FORD','ANALYST',7566,'03-DEC-81',3000,'',20);
+INSERT INTO EMP(empno,ename,job,mgr,hiredate,sal,comm,dept)
+VALUES(7934,'MILLER','CLERK',7782,'23-JAN-82',1300,'',10);
+
+CREATE TABLE MANAGER(
+  MGR_ID int,
+  NAME varchar(30),
+  SALARY int,
+  HIREDATE date
+  );
+
+CREATE TABLE DEPT(
+  DEPTNO number,
+  DNAME varchar(30),
+  LOC varchar(15)
+  );
+
+INSERT INTO DEPT VALUES('10','ACCOUNTING','NEW YORK');
+INSERT INTO DEPT VALUES('20','RESEARCH','DALLAS');
+INSERT INTO DEPT VALUES('30','SALES','CHICAGO');
+INSERT INTO DEPT VALUES('40','OPERATIONS','BOSTON');
+
+select ename from EMP
+where sal>(select sal from EMP where empno=7566);
+
+select ename from EMP
+where job=(select job from EMP where empno=7376)
+AND sal>(select sal from EMP where empno=7876);
+
+select ename,job,sal from EMP
+where sal=(select min(sal) from EMP);
+
+select DEPT, min(sal) from EMP
+group by DEPT
+    having min(sal)>(select min(sal) from EMP where DEPT=20);    
+
+select empno,ename,job from emp
+where sal< any(select sal from emp
+  where job = 'CLERK')
+  and job<> 'CLERK';
+
+Q-6
+select e.empno, e.ename, e.job from emp e
+where e.sal>(select avg(sal) from emp where dept= e.dept);
+
+select ename, dept, sal, comm from emp
+where (sal,nvl(comm,-1)) in (select sal, nvl(comm,-1)
+from emp where dept=30);
+
+Q-8
+  
+select a.ename, a.sal, a.dept, b.salavg
+from emp a,(select dept, avg(sal)salavg
+  from emp group by dept)b
+where a.dept=b.dept
+and a.sal>b.salavg;
+
+WITH SUMMARY AS (SELECT dname,sum(sal) as dept_total from emp a, dept b where a.dept=b.dept group by dname);
+SELECT dname,dept_total from summary where dept_total > (select sum(dept_total)*1/3 from summary) order by dept_total desc;
+
+SELECT ENAME,JOB,SAL FROM EMP WHERE SAL=ANY(SELECT SAL FROM EMP WHERE ENAME='SCOTT' OR ENAME='WARD');
+
+SELECT ENAME,JOB,SAL FROM EMP WHERE SAL=(SELECT SAL FROM EMP WHERE ENAME='FORD' AND JOB='ANALYST');
+
+SELECT ENAME, JOB, SAL, DEPT
+FROM EMP
+WHERE JOB =(SELECT JOB FROM EMP WHERE ENAME='JAMES') AND SAL > (SELECT SAL FROM EMP WHERE ENAME = 'FORD');
+
+SELECT ENAME, JOB FROM EMP
+WHERE DEPT = 10 AND JOB IN (SELECT JOB FROM EMP WHERE DEPT IN (SELECT DEPT FROM DEPT WHERE DNAME = 'SALES'));
+
+SELECT JOB,ENAME,EMPNO,DEPT FROM EMP S WHERE EXISTS ( SELECT * FROM EMP WHERE S.EMPNO=MGR) ORDER BY EMPNO;
+
